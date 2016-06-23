@@ -16,12 +16,30 @@ Developer Test
 ==============
 
 1.  What editor will you use to edit this file, and why?
+
+I used NotePad++, since it got line numbers and many other selections that notepad doesnot provide. 
+
 2.  Some of the questions will ask for a solution in the language of
     your choice.  What language(s) will you choose, and why?
+	
+	C#. I have extensive experience with C#. 
+	
 3.  Explain the difference between testing and debugging.
+
+Testing is finding the bug and debugging is fixing that bug by going through the code. 
+
 4.  Consider a user querying a search engine.  Describe, in as much
     detail as you like, what happens between the user clicking the
     "submit" button and the display of the results.
+	
+	- The click handler will be fired on the client side itself if using JQuery. 
+	- Ajax will call a function in the code behind file.
+	- The code behind file will have a method that accept the query. It will pass the value to the 
+	  business layer(WCF, Rest API etc).
+	- The business layer will get the results needed from database or other sources.
+	- The result is passed back to the application.
+	- The code behind method will pass back a json/xml result back to the client side script to display the results. 
+	
 
 The two tables below describe relationships between employees,
 managers, and departments (the columns employee.mgr_id and
@@ -61,25 +79,208 @@ employee                              department
 
 5.  Write an SQL query to list the full name of every employee,
     alphabetized by first name.
+	
+		SELECT name
+  FROM employee
+  order by SUBSTRING(name, 0,CHARINDEX(' ', name))
+  
 6.  Write an SQL query to list the full name of every employee,
     alphabetized by last name.
+	
+	SELECT name
+  FROM employee
+  order by SUBSTRING(name, CHARINDEX(' ', name) + 1, LEN(name))
+  
 7.  Write an SQL query to list the full name of every employee along
     with the full name of his/her manager.
+	
+	WITH ManagerDet(name,mgr_id)
+	AS
+	(
+      SELECT name,mgr_id FROM employee
+	)
+	SELECT e.name AS FULLNAME,m.name AS MANAGERNAME
+	FROM employee e,ManagerDet m
+	WHERE e.mgr_id= m.mgr_id
+	
 8.  Write an SQL query to list the full name of every employee in the
     Sales department.
+	
+	SELECT e.name AS FULLNAME FROM employee e, department d
+	WHERE e.mgr_id= d.head
+	AND d.head=15
+	
 9.  Write an SQL query to list the full name of every employee along
     with name of his/her department.
+	
+	SELECT e.name AS NAME,d.name AS DEPARTMENTNAME FROM employee e, department d
+	WHERE e.mgr_id= d.head
+	
+	
 10. Is there a better design for a database that supports the queries
     described in questions 5-9?  If so, describe it.  If not, why not?
+	
+	Yes. Have another table for manager and another employeemanager table with employeeid and managerid. In that way, 
+	it will be normalized and will be easy to maintain with a single query for any updates. 
+	
+	
 11. Write a function in the language of your choice that implements
     quicksort on an array of integers.
+	
+	private int seperate(int[] numbers, int lvalue, int max)
+    {
+    int pvt = numbers[max];
+    int temp;
+    int i = lvalue;
+    for (int j = lvalue; j < max; j++)
+    {
+        if (numbers[j] <= pvt)
+        {
+            temp = numbers[j];
+            numbers[j] = numbers[i];
+            numbers[i] = temp;
+            i++;
+        }
+    }
+    numbers[max] = input[i];
+    numbers[i] = pvt;
+    return i;
+    }
+
+	public static void quicksort(int[] numbers, int lvalue, int max)
+	{
+    int loc = 0;
+    if (lvalue < max)
+    {
+       loc = seperate(numbers, lvalue, max);
+       quicksort(numbers, lvalue, loc - 1);
+        quicksort(numbers loc + 1, max);
+    }
+	}
+
+
 12. Write a function in the language of your choice that performs
     binary search on a sorted array of integers.
+	
+	public static object BinarySearch(int [] numbers, int value, int start, int end)
+    {
+      if (start> end)
+      {
+          return "NULL";
+      }
+      else
+      {
+          int midvalue = (start+end)/2;
+          if (value == numbers [midvalue])
+          {
+             return ++midvalue;
+           }
+           else if (value < numbers [midvalue])
+           {
+               return BinarySearch(numbers, value, start, midvalue - 1);
+           }
+           else
+           {
+              return BinarySearch(numbers, value, midvalue + 1, end);
+           }
+      }
+    }
+	
 13. Write a function in the language of your choice performs the query
     you wrote for question 7, and outputs the results as an HTML table.
+	
+	public string getemployeemanagername()
+    {
+        string html = "";
+        SqlConnection connection = new SqlConnection(ConfigurationManager.AppSettings["conn"].ToString());
+        SqlCommand command = connection.CreateCommand();
+        command.CommandText = "WITH ManagerDet(name,mgr_id) AS (SELECT name,mgr_id FROM employee)SELECT e.name AS FULLNAME,m.name AS MANAGERNAME FROM employee e,ManagerDet m WHERE e.mgr_id= m.mgr_id";
+        connection.Open();
+        SqlDataReader reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            
+            string Name = reader.GetString(0);
+            string ManagerName = reader.GetString(1);
+            html +="<tr><td>"+id+"</td><td>"+Name+"</td><td>"+ManagerName+"</td></tr>"                   
+        }
+
+        connection.Close();
+        return html;
+    }
+Our html will look like the following
+
+ <table width="100%" align="center">
+        <tr align="left" >
+            <td> Name </td>            
+            <td>Manager Name</td>                        
+        </tr>
+
+        <%=getemployeemanagername()%>
+
+    </table>
+	
 14. Write a program in the language of your choice that takes a filename
     and a number N as arguments and retrieves and outputs the Nth line
     from the file.
+	
+	public void GetLine(string fileName, int N)
+    {
+	   try
+        {   
+            using (StreamReader sr = new StreamReader(fileName))
+            {
+	           string text = sr.ReadToEnd();
+               string[] lines = text.Replace("\r","").Split('\n');
+		       if (lines.Length >= N)
+			     Console.WriteLine(lines[N-1]);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("The file could not be read:");
+            Console.WriteLine(e.Message);
+        }
+		
+	}
+
 15. Write the function from question 12 in a different language.
+
+VB.NET
+
+Public Shared Function BinarySearch(numbers As Integer(), value As Integer, start As Integer, [end] As Integer) As Object
+	If start > [end] Then
+		Return "NULL"
+	Else
+		Dim midvalue As Integer = (start + [end]) / 2
+		If value = numbers(midvalue) Then
+			Return System.Threading.Interlocked.Increment(midvalue)
+		ElseIf value < numbers(midvalue) Then
+			Return BinarySearch(numbers, value, start, midvalue - 1)
+		Else
+			Return BinarySearch(numbers, value, midvalue + 1, [end])
+		End If
+	End If
+End Function
+
 16. Write the program from question 14 in a different language (it can
     be the same language you used for #15, but it doesn't have to be).
+
+	VB.NET
+	
+	Public Sub GetLine(fileName As String, N As Integer)
+	Try
+		Using sr As New StreamReader(fileName)
+			Dim text As String = sr.ReadToEnd()
+			Dim lines As String() = text.Replace(vbCr, "").Split(ControlChars.Lf)
+			If lines.Length >= N Then
+				Console.WriteLine(lines(N - 1))
+			End If
+		End Using
+	Catch e As Exception
+		Console.WriteLine("The file could not be read:")
+		Console.WriteLine(e.Message)
+	End Try
+
+	End Sub
